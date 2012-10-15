@@ -3,7 +3,7 @@ $:.push File.expand_path("../lib", __FILE__)
 require "badgeville_berlin/version"
 
 Gem::Specification.new do |s|
-  s.name        = "badgeville_berlin_opower"
+  s.name        = "badgeville_berlin"
   s.version     = BadgevilleBerlin::VERSION
   s.authors     = ["Andrija Perovic",
                    "Alex Tran",
