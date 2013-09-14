@@ -5,6 +5,7 @@ module BadgevilleBerlin
   class BaseResource < ActiveResource::Base
 
     BATCH_SIZE_DEFAULT = 50
+    COMPLEX_ATTRIBUTES = []
 
     def initialize(attributes = {}, persisted = false)
       #we return a nested JSON response with player rewards keyed off of mongo id's
@@ -38,7 +39,7 @@ module BadgevilleBerlin
                   end
                 end
               when Hash
-                if [:selector, :adjustment].include?(key)
+                if self.class::COMPLEX_ATTRIBUTES.include?(key)
                   #if the key is selector or adjustment, as on the ActivityDefinition object, we don't want to create a nested resource
                   value
                 else
