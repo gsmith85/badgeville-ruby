@@ -25,7 +25,7 @@ module BadgevilleBerlin
 
       attributes = ActiveResource::Formats.remove_root(attributes) if remove_root
 
-      attributes.each do |key, value|
+      customize_keys_for_request(attributes).each do |key, value|
         @attributes[key.to_s] =
             case value
               when Array
@@ -52,6 +52,27 @@ module BadgevilleBerlin
       end
       self
     end
+
+    # Enables revising Berlin JSON response key names to match what
+    # is expected by model-level logic. (e.g. Berlin JSON payload
+    # returns the player's nickname under the key :nick_name, but the
+    # Player model expects it as :nickname without the underscore.)
+    #
+    # @example Rewrites the BadgevilleBerlin::Player :nick_name key as 
+    # :nickname.
+    def customize_keys_for_request(attrs)
+      # The given resource type determined by self.class. For each attribute key
+      # in the ActiveResource object that needs renaming, replace the original
+      # hash key with the revised hash key as specified in the resource type
+      # -specific constant CUSTOM_ATTRS_FOR_REQUEST.
+      if defined?(self.class::CUSTOM_REQUEST_KEYS)
+        self.class::CUSTOM_REQUEST_KEYS.each do |orig_key, revised_key| 
+          attrs[revised_key] = attrs.delete(orig_key) if attrs.include?(orig_key) 
+        end
+      end
+      attrs
+    end
+
 
     # Overrides encode call to prevent to_json from converting non-valid type
     # objects to nested-json hash (e.g. BadgevilleBerlin::ActivityDefinition::Selector)
@@ -81,13 +102,13 @@ module BadgevilleBerlin
       @errors ||= BadgevilleBerlin::Errors.new(self)
     end
 
-    # Overrides the ActiveResource isntance method in module Validations
+    # Overrides the ActiveResource instance method in module Validations
     # in order to load_remote_errors() for the case where the format is
     # the custom BadgevilleJson format. Loads the set of remote errors into
     # the object’s Errors collection based on the content-type of the
     # error-block received.
     #
-    # @param remote_errors errors from teh remote server
+    # @param remote_errors errors from the remote server
     # @param [Object] save_cache flag that directs the errors cache to be
     # cleared by default
     def load_remote_errors(remote_errors, save_cache = false ) #:nodoc:
